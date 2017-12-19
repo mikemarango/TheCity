@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CityInfo.API.Data;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,16 +14,20 @@ namespace CityInfo.API.Controllers
     {
         // GET: api/cities
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IActionResult Get()
         {
-            return new string[] { "city1", "city2" };
+            return base.Ok(CityData.Current.Cities);
         }
 
         // GET api/cities/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public IActionResult Get(int id)
         {
-            return "value";
+            if (CityData.Current.Cities.FirstOrDefault(c => c.Id == id) == null)
+            {
+                return NotFound();
+            }
+            return base.Ok(CityData.Current.Cities.FirstOrDefault(c => c.Id == id));
         }
 
         // POST api/cities
