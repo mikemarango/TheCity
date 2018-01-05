@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CityInfo.API.Data;
+using CityInfo.API.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -24,8 +25,8 @@ namespace CityInfo.API.Controllers
             return Ok(city.Attractions);
         }
 
-        // GET api/attractions/5
-        [HttpGet("{cityId}/attractions/{id}")]
+        // GET api/cities/attractions/5
+        [HttpGet("{cityId}/attractions/{id}", Name = "GetAttraction")]
         public IActionResult Get(int cityId, int id)
         {
             var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
@@ -41,19 +42,46 @@ namespace CityInfo.API.Controllers
             return Ok(attraction);
         }
 
-        // POST api/attractions
-        [HttpPost]
-        public void Post([FromBody]string value)
+        // POST api/cities/attractions
+        [HttpPost("{cityId}/attractions")]
+        public IActionResult Post(int cityId, [FromBody]AttractionCreateDto attraction)
         {
+            if (attraction == null)
+                return BadRequest();
+
+            if (attraction.Description == attraction.Name)
+                ModelState.AddModelError("Description", "The description should be different from the name.");
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+
+            if (city == null)
+                return NotFound();
+
+            var maxAttractionId = 
+                CityData.Current.Cities.SelectMany(c => c.Attractions).Max(a => a.Id);
+
+            var finalAttraction = new AttractionDto()
+            {
+                Id = ++maxAttractionId,
+                Name = attraction.Name,
+                Description = attraction.Description
+            };
+
+            city.Attractions.Add(finalAttraction);
+
+            return CreatedAtRoute("GetAttraction", new { cityId, id = finalAttraction.Id }, finalAttraction);
         }
 
-        // PUT api/attractions/5
+        // PUT api/cities/attractions/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody]string value)
         {
         }
 
-        // DELETE api/attractions/5
+        // DELETE api/cities/attractions/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
