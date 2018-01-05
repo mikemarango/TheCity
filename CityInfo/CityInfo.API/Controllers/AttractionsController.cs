@@ -75,10 +75,33 @@ namespace CityInfo.API.Controllers
             return CreatedAtRoute("GetAttraction", new { cityId, id = finalAttraction.Id }, finalAttraction);
         }
 
-        // PUT api/cities/attractions/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        // PUT api/cities/attractions/5 (Full update)
+        [HttpPut("{cityId}/attractions/{id}")]
+        public IActionResult Put(int cityId, int id,  [FromBody]AttractionUpdateDto attraction)
         {
+            if (attraction == null)
+                return BadRequest();
+
+            if (attraction.Description == attraction.Name)
+                ModelState.AddModelError("Description", "The description should be different from the name.");
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+
+            if (city == null)
+                return NotFound();
+
+            var attractionDto = city.Attractions.FirstOrDefault(a => a.Id == id);
+
+            if (attractionDto == null)
+                return NotFound();
+
+            attractionDto.Name = attraction.Name;
+            attractionDto.Description = attraction.Description;
+
+            return NoContent();
         }
 
         // DELETE api/cities/attractions/5
