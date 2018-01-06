@@ -132,6 +132,14 @@ namespace CityInfo.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (attractionToPatch.Description == attractionToPatch.Name)
+                ModelState.AddModelError("Description", "The description must be different from name");
+
+            TryValidateModel(attractionToPatch);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             attractionDto.Name = attractionToPatch.Name;
             attractionDto.Description = attractionToPatch.Description;
 
@@ -140,9 +148,19 @@ namespace CityInfo.API.Controllers
 
 
         // DELETE api/cities/attractions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("{cityId}/attractions/{id}")]
+        public IActionResult Delete(int cityId, int id)
         {
+            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+            if (city == null)
+                return NotFound();
+            var attractionFromStore = city.Attractions.FirstOrDefault(a => a.Id == id);
+            if (attractionFromStore == null)
+                return NotFound();
+
+            city.Attractions.Remove(attractionFromStore);
+
+            return NoContent();
         }
     }
 }
