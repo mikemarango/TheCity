@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CityInfo.API.Services.EmailService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -25,10 +26,16 @@ namespace CityInfo.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().AddXmlDataContractSerializerFormatters();
+
+#if DEBUG
+            services.AddTransient<IMailService, LocalEmail>();
+#else
+            services.AddTransient<IMailService, CloudEmail>();
+#endif
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logger)
+            // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+            public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logger)
         {
             logger.AddConsole();
             logger.AddDebug();

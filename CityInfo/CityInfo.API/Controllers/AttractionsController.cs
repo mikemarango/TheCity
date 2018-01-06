@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CityInfo.API.Data;
 using CityInfo.API.Models.DTOs;
+using CityInfo.API.Services.EmailService;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,10 +16,12 @@ namespace CityInfo.API.Controllers
     [Route("api/cities")]
     public class AttractionsController : Controller
     {
+        public IMailService Email { get; }
         public ILogger<AttractionsController> Logger { get; }
 
-        public AttractionsController(ILogger<AttractionsController> logger)
+        public AttractionsController(IMailService email, ILogger<AttractionsController> logger)
         {
+            Email = email;
             Logger = logger;
         }
         // GET: api/attractions
@@ -176,6 +179,8 @@ namespace CityInfo.API.Controllers
                 return NotFound();
 
             city.Attractions.Remove(attractionFromStore);
+            Email.Send("Attraction for city was deleted.",
+                $"Attraction {attractionFromStore.Name} with id {attractionFromStore.Id} was deleted.");
 
             return NoContent();
         }
