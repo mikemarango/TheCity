@@ -11,7 +11,7 @@ namespace CityInfo.API.Data
     {
         public CityContext(DbContextOptions<CityContext> options) : base(options)
         {
-            Database.EnsureCreated();
+            Database.Migrate();
         }
         public DbSet<City> Cities { get; set; }
         public DbSet<Attraction> Attractions { get; set; }
