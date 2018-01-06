@@ -6,6 +6,7 @@ using CityInfo.API.Data;
 using CityInfo.API.Models.DTOs;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,16 +15,32 @@ namespace CityInfo.API.Controllers
     [Route("api/cities")]
     public class AttractionsController : Controller
     {
+        public ILogger<AttractionsController> Logger { get; }
+
+        public AttractionsController(ILogger<AttractionsController> logger)
+        {
+            Logger = logger;
+        }
         // GET: api/attractions
         [HttpGet("{cityId}/attractions")]
         public IActionResult Get(int cityId)
         {
-            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            if (city == null)
+            try
             {
-                return NotFound();
+                var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+                if (city == null)
+                {
+                    Logger.LogInformation($"City with id {cityId} doesn't exist.");
+                    return NotFound();
+                }
+                return Ok(city.Attractions);
+
             }
-            return Ok(city.Attractions);
+            catch (Exception ex)
+            {
+                Logger.LogCritical($"None existent City with id {cityId}", ex);
+                return StatusCode(500, "An error occured while handling your request.");
+            }
         }
 
         // GET api/cities/attractions/5
