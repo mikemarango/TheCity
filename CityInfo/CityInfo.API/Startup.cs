@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLog.Extensions.Logging;
 
 namespace CityInfo.API
 {
@@ -31,6 +32,7 @@ namespace CityInfo.API
         {
             logger.AddConsole();
             logger.AddDebug();
+            logger.AddNLog();
 
             if (env.IsDevelopment())
             {
