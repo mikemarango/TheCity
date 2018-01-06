@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CityInfo.API.Data;
+using CityInfo.API.Services.CityService;
 using CityInfo.API.Services.EmailService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,8 @@ namespace CityInfo.API
 
             services.AddDbContext<CityContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddScoped<ICityRepository, CityRepository>();
         }
 
             // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
