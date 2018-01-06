@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CityInfo.API.Data;
 using CityInfo.API.Models.DTOs;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -103,6 +104,40 @@ namespace CityInfo.API.Controllers
 
             return NoContent();
         }
+
+        [HttpPatch("{cityId}/attractions/{id}")]
+        public IActionResult Patch(int cityId, int id, [FromBody]JsonPatchDocument<AttractionUpdateDto> document)
+        {
+            if (document == null)
+                return BadRequest();
+
+            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+
+            if (city == null)
+                return NotFound();
+
+            var attractionDto = city.Attractions.FirstOrDefault(a => a.Id == id);
+
+            if (attractionDto == null)
+                return NotFound();
+
+            var attractionToPatch = new AttractionUpdateDto()
+            {
+                Name = attractionDto.Name,
+                Description = attractionDto.Description
+            };
+
+            document.ApplyTo(attractionToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            attractionDto.Name = attractionToPatch.Name;
+            attractionDto.Description = attractionToPatch.Description;
+
+            return NoContent();
+        }
+
 
         // DELETE api/cities/attractions/5
         [HttpDelete("{id}")]
