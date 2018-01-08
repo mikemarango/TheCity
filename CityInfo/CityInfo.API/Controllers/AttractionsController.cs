@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CityInfo.API.Data;
 using CityInfo.API.Models.DTOs;
+using CityInfo.API.Services.CityService;
 using CityInfo.API.Services.EmailService;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ namespace CityInfo.API.Controllers
     [Route("api/cities")]
     public class AttractionsController : Controller
     {
+        public ICityRepository Repository { get; }
         public IMailService Email { get; }
         public ILogger<AttractionsController> Logger { get; }
 
-        public AttractionsController(IMailService email, ILogger<AttractionsController> logger)
+        public AttractionsController(ICityRepository repository, IMailService email, ILogger<AttractionsController> logger)
         {
+            Repository = repository;
             Email = email;
             Logger = logger;
         }
@@ -30,13 +33,33 @@ namespace CityInfo.API.Controllers
         {
             try
             {
-                var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-                if (city == null)
+                //var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+                //if (city == null)
+                //{
+                //    Logger.LogInformation($"City with id {cityId} doesn't exist.");
+                //    return NotFound();
+                //}
+                //return Ok(city.Attractions);
+
+                if (!Repository.CityExists(cityId))
                 {
                     Logger.LogInformation($"City with id {cityId} doesn't exist.");
                     return NotFound();
                 }
-                return Ok(city.Attractions);
+
+                var cityAttractions = Repository.GetAttractions(cityId);
+                var results = new List<AttractionDto>();
+                foreach (var attraction in cityAttractions)
+                {
+                    results.Add(new AttractionDto()
+                    {
+                        Id = attraction.Id,
+                        Name = attraction.Name,
+                        Description = attraction.Description
+                    });
+                }
+
+                return Ok(results);
 
             }
             catch (Exception ex)
@@ -50,17 +73,38 @@ namespace CityInfo.API.Controllers
         [HttpGet("{cityId}/attractions/{id}", Name = "GetAttraction")]
         public IActionResult Get(int cityId, int id)
         {
-            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            if (city == null)
+            //var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+            //if (city == null)
+            //{
+            //    return NotFound();
+            //}
+            //var attraction = city.Attractions.FirstOrDefault(a => a.Id == id);
+            //if (attraction == null)
+            //{
+            //    return NotFound();
+            //}
+            //return Ok(attraction);
+
+            if (!Repository.CityExists(cityId))
             {
+                Logger.LogInformation($"City with id {cityId} doesn't exist.");
                 return NotFound();
             }
-            var attraction = city.Attractions.FirstOrDefault(a => a.Id == id);
+
+            var attraction = Repository.GetAttraction(cityId, id);
+
             if (attraction == null)
-            {
                 return NotFound();
-            }
-            return Ok(attraction);
+
+            var result = new AttractionDto()
+            {
+                Id = attraction.Id,
+                Name = attraction.Name,
+                Description = attraction.Description
+            };
+
+            return Ok(result);
+
         }
 
         // POST api/cities/attractions

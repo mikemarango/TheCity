@@ -10,6 +10,9 @@ namespace CityInfo.API.Data
     {
         public static void Initialize(CityContext context)
         {
+            if (context.Cities.Any())
+                return;
+
             var cities = new List<City>()
             {
                 new City()

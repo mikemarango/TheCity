@@ -40,5 +40,8 @@ namespace CityInfo.API.Services.CityService
             return Context.Attractions.Where(a => a.CityId == cityId && a.Id == attractionId).FirstOrDefault();
         }
 
+        public bool CityExists(int cityId) => 
+            Context.Cities.Any(c => c.Id == cityId);
+
     }
 }

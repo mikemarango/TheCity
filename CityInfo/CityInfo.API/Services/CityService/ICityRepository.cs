@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace CityInfo.API.Services.CityService
 {
-    interface ICityRepository
+    public interface ICityRepository
     {
         IEnumerable<City> GetCities();
         City GetCity(int cityId, bool includeAttractions);
         IEnumerable<Attraction> GetAttractions(int cityId);
         Attraction GetAttraction(int cityId, int attractionId);
-
-
+        bool CityExists(int cityId);
     }
 }

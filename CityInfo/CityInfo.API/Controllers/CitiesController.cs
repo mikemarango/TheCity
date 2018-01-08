@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using CityInfo.API.Data;
 using Microsoft.AspNetCore.Mvc;
+using CityInfo.API.Services.CityService;
+using CityInfo.API.Models.DTOs;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,22 +14,70 @@ namespace CityInfo.API.Controllers
     [Route("api/cities")]
     public class CitiesController : Controller
     {
+        public ICityRepository CityRepository { get; }
+
+        public CitiesController(ICityRepository cityRepository)
+        {
+            CityRepository = cityRepository;
+        }
+
         // GET: api/cities
         [HttpGet]
         public IActionResult Get()
         {
-            return base.Ok(CityData.Current.Cities);
+            var cities = CityRepository.GetCities();
+            var results = new List<CityNoAttractionsDto>();
+            foreach (var city in cities)
+            {
+                results.Add(new CityNoAttractionsDto
+                {
+                    Id = city.Id,
+                    Description = city.Description,
+                    Name = city.Name
+                });
+            }
+            return Ok(results);
         }
 
         // GET api/cities/5
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult Get(int id, bool includeAttractions = false)
         {
-            if (CityData.Current.Cities.FirstOrDefault(c => c.Id == id) == null)
-            {
+            var city = CityRepository.GetCity(id, includeAttractions);
+
+            if (city == null)
                 return NotFound();
+
+            if (includeAttractions)
+            {
+                var cityResult = new CityDto()
+                {
+                    Id = city.Id,
+                    Name = city.Name,
+                    Description = city.Description
+                };
+                foreach (var attraction in city.Attractions)
+                {
+                    cityResult.Attractions.Add(
+                        new AttractionDto()
+                        {
+                            Id = attraction.Id,
+                            Name = attraction.Name,
+                            Description = attraction.Description
+                        });
+                }
+
+                return Ok(cityResult);
             }
-            return base.Ok(CityData.Current.Cities.FirstOrDefault(c => c.Id == id));
+
+            var cityNoAttractionResult = new CityNoAttractionsDto()
+            {
+                Id = city.Id,
+                Description = city.Description,
+                Name = city.Name
+            };
+
+            return Ok(cityNoAttractionResult);
         }
 
         // POST api/cities
