@@ -6,6 +6,7 @@ using CityInfo.API.Data;
 using Microsoft.AspNetCore.Mvc;
 using CityInfo.API.Services.CityService;
 using CityInfo.API.Models.DTOs;
+using AutoMapper;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -26,16 +27,7 @@ namespace CityInfo.API.Controllers
         public IActionResult Get()
         {
             var cities = CityRepository.GetCities();
-            var results = new List<CityNoAttractionsDto>();
-            foreach (var city in cities)
-            {
-                results.Add(new CityNoAttractionsDto
-                {
-                    Id = city.Id,
-                    Description = city.Description,
-                    Name = city.Name
-                });
-            }
+            var results = Mapper.Map<IEnumerable<CityNoAttractionsDto>>(cities);
             return Ok(results);
         }
 
@@ -50,34 +42,12 @@ namespace CityInfo.API.Controllers
 
             if (includeAttractions)
             {
-                var cityResult = new CityDto()
-                {
-                    Id = city.Id,
-                    Name = city.Name,
-                    Description = city.Description
-                };
-                foreach (var attraction in city.Attractions)
-                {
-                    cityResult.Attractions.Add(
-                        new AttractionDto()
-                        {
-                            Id = attraction.Id,
-                            Name = attraction.Name,
-                            Description = attraction.Description
-                        });
-                }
-
+                var cityResult = Mapper.Map<CityDto>(city);
                 return Ok(cityResult);
             }
 
-            var cityNoAttractionResult = new CityNoAttractionsDto()
-            {
-                Id = city.Id,
-                Description = city.Description,
-                Name = city.Name
-            };
-
-            return Ok(cityNoAttractionResult);
+            var cityNoAttractionsResult = Mapper.Map<CityNoAttractionsDto>(city);
+            return Ok(cityNoAttractionsResult);
         }
 
         // POST api/cities

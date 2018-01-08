@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using CityInfo.API.Data;
 using CityInfo.API.Models.DTOs;
 using CityInfo.API.Services.CityService;
@@ -33,14 +34,6 @@ namespace CityInfo.API.Controllers
         {
             try
             {
-                //var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-                //if (city == null)
-                //{
-                //    Logger.LogInformation($"City with id {cityId} doesn't exist.");
-                //    return NotFound();
-                //}
-                //return Ok(city.Attractions);
-
                 if (!Repository.CityExists(cityId))
                 {
                     Logger.LogInformation($"City with id {cityId} doesn't exist.");
@@ -48,17 +41,7 @@ namespace CityInfo.API.Controllers
                 }
 
                 var cityAttractions = Repository.GetAttractions(cityId);
-                var results = new List<AttractionDto>();
-                foreach (var attraction in cityAttractions)
-                {
-                    results.Add(new AttractionDto()
-                    {
-                        Id = attraction.Id,
-                        Name = attraction.Name,
-                        Description = attraction.Description
-                    });
-                }
-
+                var results = Mapper.Map<IEnumerable<AttractionDto>>(cityAttractions);
                 return Ok(results);
 
             }
@@ -73,17 +56,6 @@ namespace CityInfo.API.Controllers
         [HttpGet("{cityId}/attractions/{id}", Name = "GetAttraction")]
         public IActionResult Get(int cityId, int id)
         {
-            //var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            //if (city == null)
-            //{
-            //    return NotFound();
-            //}
-            //var attraction = city.Attractions.FirstOrDefault(a => a.Id == id);
-            //if (attraction == null)
-            //{
-            //    return NotFound();
-            //}
-            //return Ok(attraction);
 
             if (!Repository.CityExists(cityId))
             {
@@ -96,13 +68,7 @@ namespace CityInfo.API.Controllers
             if (attraction == null)
                 return NotFound();
 
-            var result = new AttractionDto()
-            {
-                Id = attraction.Id,
-                Name = attraction.Name,
-                Description = attraction.Description
-            };
-
+            var result = Mapper.Map<AttractionDto>(attraction);
             return Ok(result);
 
         }

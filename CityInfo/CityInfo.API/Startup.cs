@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using CityInfo.API.Data;
+using CityInfo.API.Models.DTOs;
+using CityInfo.API.Models.Entities;
 using CityInfo.API.Services.CityService;
 using CityInfo.API.Services.EmailService;
 using Microsoft.AspNetCore.Builder;
@@ -59,6 +62,13 @@ namespace CityInfo.API
             }
 
             app.UseStatusCodePages();
+
+            Mapper.Initialize(config =>
+            {
+                config.CreateMap<City, CityNoAttractionsDto>();
+                config.CreateMap<City, CityDto>();
+                config.CreateMap<Attraction, AttractionDto>();
+            });
 
             app.UseMvc();
         }
