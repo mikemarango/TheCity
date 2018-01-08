@@ -43,5 +43,12 @@ namespace CityInfo.API.Services.CityService
         public bool CityExists(int cityId) => 
             Context.Cities.Any(c => c.Id == cityId);
 
+        public void CreateAttraction(int cityId, Attraction attraction)
+        {
+            var city = GetCity(cityId, false);
+            city.Attractions.Add(attraction);
+        }
+
+        public bool Save() => (Context.SaveChanges() >= 0);
     }
 }

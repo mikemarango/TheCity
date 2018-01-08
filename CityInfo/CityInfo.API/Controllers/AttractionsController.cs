@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CityInfo.API.Data;
 using CityInfo.API.Models.DTOs;
+using CityInfo.API.Models.Entities;
 using CityInfo.API.Services.CityService;
 using CityInfo.API.Services.EmailService;
 using Microsoft.AspNetCore.JsonPatch;
@@ -86,24 +87,18 @@ namespace CityInfo.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+            if (!Repository.CityExists(cityId)) return NotFound();
 
-            if (city == null)
-                return NotFound();
+            var finalAttraction = Mapper.Map<Attraction>(attraction);
 
-            var maxAttractionId = 
-                CityData.Current.Cities.SelectMany(c => c.Attractions).Max(a => a.Id);
+            Repository.CreateAttraction(cityId, finalAttraction);
 
-            var finalAttraction = new AttractionDto()
-            {
-                Id = ++maxAttractionId,
-                Name = attraction.Name,
-                Description = attraction.Description
-            };
+            if (!Repository.Save())
+                return StatusCode(500, "A problem occured while processing your request!");
 
-            city.Attractions.Add(finalAttraction);
+            var createdAttraction = Mapper.Map<AttractionDto>(finalAttraction);
 
-            return CreatedAtRoute("GetAttraction", new { cityId, id = finalAttraction.Id }, finalAttraction);
+            return CreatedAtRoute("GetAttraction", new { cityId, id = createdAttraction.Id }, createdAttraction);
         }
 
         // PUT api/cities/attractions/5 (Full update)

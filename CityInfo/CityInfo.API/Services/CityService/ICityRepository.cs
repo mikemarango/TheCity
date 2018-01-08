@@ -13,5 +13,7 @@ namespace CityInfo.API.Services.CityService
         IEnumerable<Attraction> GetAttractions(int cityId);
         Attraction GetAttraction(int cityId, int attractionId);
         bool CityExists(int cityId);
+        void CreateAttraction(int cityId, Attraction attraction);
+        bool Save();
     }
 }
