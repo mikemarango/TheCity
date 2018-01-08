@@ -49,6 +49,11 @@ namespace CityInfo.API.Services.CityService
             city.Attractions.Add(attraction);
         }
 
+        public void DeleteAttraction(Attraction attraction)
+        {
+            Context.Attractions.Remove(attraction);
+        }
         public bool Save() => (Context.SaveChanges() >= 0);
+
     }
 }

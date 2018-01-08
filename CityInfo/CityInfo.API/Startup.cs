@@ -69,6 +69,8 @@ namespace CityInfo.API
                 config.CreateMap<City, CityDto>();
                 config.CreateMap<Attraction, AttractionDto>();
                 config.CreateMap<AttractionCreateDto, Attraction>();
+                config.CreateMap<AttractionUpdateDto, Attraction>();
+                config.CreateMap<Attraction, AttractionUpdateDto>();
             });
 
             app.UseMvc();

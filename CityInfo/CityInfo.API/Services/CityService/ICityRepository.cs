@@ -15,5 +15,6 @@ namespace CityInfo.API.Services.CityService
         bool CityExists(int cityId);
         void CreateAttraction(int cityId, Attraction attraction);
         bool Save();
+        void DeleteAttraction(Attraction attraction);
     }
 }

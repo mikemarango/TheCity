@@ -114,18 +114,18 @@ namespace CityInfo.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-
-            if (city == null)
+            if (!Repository.CityExists(cityId))
                 return NotFound();
 
-            var attractionDto = city.Attractions.FirstOrDefault(a => a.Id == id);
+            var cityAttraction = Repository.GetAttraction(cityId, id);
 
-            if (attractionDto == null)
+            if (cityAttraction == null)
                 return NotFound();
 
-            attractionDto.Name = attraction.Name;
-            attractionDto.Description = attraction.Description;
+            Mapper.Map(attraction, cityAttraction);
+
+            if (!Repository.Save())
+                return StatusCode(500, "An error occured while handling your request.");
 
             return NoContent();
         }
@@ -136,37 +136,33 @@ namespace CityInfo.API.Controllers
             if (document == null)
                 return BadRequest();
 
-            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-
-            if (city == null)
+            if (!Repository.CityExists(cityId))
                 return NotFound();
 
-            var attractionDto = city.Attractions.FirstOrDefault(a => a.Id == id);
+            var cityAttraction = Repository.GetAttraction(cityId, id);
 
-            if (attractionDto == null)
+            if (cityAttraction == null)
                 return NotFound();
 
-            var attractionToPatch = new AttractionUpdateDto()
-            {
-                Name = attractionDto.Name,
-                Description = attractionDto.Description
-            };
+            var attractionPatch = Mapper.Map<AttractionUpdateDto>(cityAttraction);
 
-            document.ApplyTo(attractionToPatch, ModelState);
+            document.ApplyTo(attractionPatch, ModelState);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (attractionToPatch.Description == attractionToPatch.Name)
+            if (attractionPatch.Description == attractionPatch.Name)
                 ModelState.AddModelError("Description", "The description must be different from name");
 
-            TryValidateModel(attractionToPatch);
+            TryValidateModel(attractionPatch);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            attractionDto.Name = attractionToPatch.Name;
-            attractionDto.Description = attractionToPatch.Description;
+            Mapper.Map(attractionPatch, cityAttraction);
+
+            if (!Repository.Save())
+                return StatusCode(500, "An error occured while processing your request.");
 
             return NoContent();
         }
@@ -176,16 +172,21 @@ namespace CityInfo.API.Controllers
         [HttpDelete("{cityId}/attractions/{id}")]
         public IActionResult Delete(int cityId, int id)
         {
-            var city = CityData.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            if (city == null)
-                return NotFound();
-            var attractionFromStore = city.Attractions.FirstOrDefault(a => a.Id == id);
-            if (attractionFromStore == null)
+
+            if (!Repository.CityExists(cityId))
                 return NotFound();
 
-            city.Attractions.Remove(attractionFromStore);
+            var attraction = Repository.GetAttraction(cityId, id);
+            if (attraction == null)
+                return NotFound();
+
+            Repository.DeleteAttraction(attraction);
+
+            if (!Repository.Save())
+                return StatusCode(500, "An error occured while processing your request.");
+
             Email.Send("Attraction for city was deleted.",
-                $"Attraction {attractionFromStore.Name} with id {attractionFromStore.Id} was deleted.");
+                $"Attraction {attraction.Name} with id {attraction.Id} was deleted.");
 
             return NoContent();
         }
