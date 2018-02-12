@@ -24,18 +24,18 @@ namespace CityInfo.API.Controllers
 
         // GET: api/cities
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var cities = CityRepository.GetCities();
+            var cities = await CityRepository.GetCitiesAsync();
             var results = Mapper.Map<IEnumerable<CityNoAttractionsDto>>(cities);
             return Ok(results);
         }
 
         // GET api/cities/5
         [HttpGet("{id}")]
-        public IActionResult Get(int id, bool includeAttractions = false)
+        public async Task<IActionResult> Get(int id, bool includeAttractions = false)
         {
-            var city = CityRepository.GetCity(id, includeAttractions);
+            var city = await CityRepository.GetCityAsync(id, includeAttractions);
 
             if (city == null)
                 return NotFound();

@@ -1,7 +1,9 @@
-﻿namespace CityInfo.API.Services.EmailService
+﻿using System.Threading.Tasks;
+
+namespace CityInfo.API.Services.EmailService
 {
     public interface IMailService
     {
-        void Send(string subject, string message);
+        Task SendEmailAsync(string subject, string message);
     }
 }

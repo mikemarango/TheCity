@@ -11,12 +11,15 @@ namespace CityInfo.API.Services.EmailService
         private string mailTo = Startup.Configuration["MailSettings:MailTo"];
         private string mailFrom = Startup.Configuration["MailSettings:MailFrom"];
 
-        public void Send(string subject, string message)
+
+        public async Task SendEmailAsync(string subject, string message)
         {
             // send mail - output to debug window
             Debug.WriteLine($"Mail from {mailFrom} to {mailTo}, using CloudEmail");
             Debug.WriteLine($"Subject: {subject}");
             Debug.WriteLine($"Message: {message}");
+
+            await Task.CompletedTask;
         }
     }
 }

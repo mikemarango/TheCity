@@ -8,13 +8,13 @@ namespace CityInfo.API.Services.CityService
 {
     public interface ICityRepository
     {
-        IEnumerable<City> GetCities();
-        City GetCity(int cityId, bool includeAttractions);
-        IEnumerable<Attraction> GetAttractions(int cityId);
-        Attraction GetAttraction(int cityId, int attractionId);
-        bool CityExists(int cityId);
-        void CreateAttraction(int cityId, Attraction attraction);
-        bool Save();
-        void DeleteAttraction(Attraction attraction);
+        Task<IEnumerable<City>> GetCitiesAsync();
+        Task<City> GetCityAsync(int cityId, bool includeAttractions);
+        Task<IEnumerable<Attraction>> GetAttractionsAsync(int cityId);
+        Task<Attraction> GetAttractionAsync(int cityId, int attractionId);
+        Task<bool> CityExistsAsync(int cityId);
+        Task CreateAttractionAsync(int cityId, Attraction attraction);
+        Task<bool> SaveAsync();
+        Task DeleteAttractionAsync(Attraction attraction);
     }
 }

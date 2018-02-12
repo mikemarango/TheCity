@@ -31,17 +31,17 @@ namespace CityInfo.API.Controllers
         }
         // GET: api/attractions
         [HttpGet("{cityId}/attractions")]
-        public IActionResult Get(int cityId)
+        public async Task<IActionResult> Get(int cityId)
         {
             try
             {
-                if (!Repository.CityExists(cityId))
+                if (await Repository.CityExistsAsync(cityId) == false)
                 {
                     Logger.LogInformation($"City with id {cityId} doesn't exist.");
                     return NotFound();
                 }
 
-                var cityAttractions = Repository.GetAttractions(cityId);
+                var cityAttractions = await Repository.GetAttractionsAsync(cityId);
                 var results = Mapper.Map<IEnumerable<AttractionDto>>(cityAttractions);
                 return Ok(results);
 
@@ -55,16 +55,16 @@ namespace CityInfo.API.Controllers
 
         // GET api/cities/attractions/5
         [HttpGet("{cityId}/attractions/{id}", Name = "GetAttraction")]
-        public IActionResult Get(int cityId, int id)
+        public async Task<IActionResult> Get(int cityId, int id)
         {
 
-            if (!Repository.CityExists(cityId))
+            if (await Repository.CityExistsAsync(cityId) == false)
             {
                 Logger.LogInformation($"City with id {cityId} doesn't exist.");
                 return NotFound();
             }
 
-            var attraction = Repository.GetAttraction(cityId, id);
+            var attraction = await Repository.GetAttractionAsync(cityId, id);
 
             if (attraction == null)
                 return NotFound();
@@ -76,7 +76,7 @@ namespace CityInfo.API.Controllers
 
         // POST api/cities/attractions
         [HttpPost("{cityId}/attractions")]
-        public IActionResult Post(int cityId, [FromBody]AttractionCreateDto attraction)
+        public async Task<IActionResult> Post(int cityId, [FromBody]AttractionCreateDto attraction)
         {
             if (attraction == null)
                 return BadRequest();
@@ -87,13 +87,13 @@ namespace CityInfo.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!Repository.CityExists(cityId)) return NotFound();
+            if (!await Repository.CityExistsAsync(cityId)) return NotFound();
 
             var finalAttraction = Mapper.Map<Attraction>(attraction);
 
-            Repository.CreateAttraction(cityId, finalAttraction);
+            await Repository.CreateAttractionAsync(cityId, finalAttraction);
 
-            if (!Repository.Save())
+            if (!await Repository.SaveAsync())
                 return StatusCode(500, "A problem occured while processing your request!");
 
             var createdAttraction = Mapper.Map<AttractionDto>(finalAttraction);
@@ -103,7 +103,7 @@ namespace CityInfo.API.Controllers
 
         // PUT api/cities/attractions/5 (Full update)
         [HttpPut("{cityId}/attractions/{id}")]
-        public IActionResult Put(int cityId, int id,  [FromBody]AttractionUpdateDto attraction)
+        public async Task<IActionResult> Put(int cityId, int id,  [FromBody]AttractionUpdateDto attraction)
         {
             if (attraction == null)
                 return BadRequest();
@@ -114,32 +114,32 @@ namespace CityInfo.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!Repository.CityExists(cityId))
+            if (!await Repository.CityExistsAsync(cityId))
                 return NotFound();
 
-            var cityAttraction = Repository.GetAttraction(cityId, id);
+            var cityAttraction = await Repository.GetAttractionAsync(cityId, id);
 
             if (cityAttraction == null)
                 return NotFound();
 
             Mapper.Map(attraction, cityAttraction);
 
-            if (!Repository.Save())
+            if (!await Repository.SaveAsync())
                 return StatusCode(500, "An error occured while handling your request.");
 
             return NoContent();
         }
 
         [HttpPatch("{cityId}/attractions/{id}")]
-        public IActionResult Patch(int cityId, int id, [FromBody]JsonPatchDocument<AttractionUpdateDto> document)
+        public async Task<IActionResult> Patch(int cityId, int id, [FromBody]JsonPatchDocument<AttractionUpdateDto> document)
         {
             if (document == null)
                 return BadRequest();
 
-            if (!Repository.CityExists(cityId))
+            if (!await Repository.CityExistsAsync(cityId))
                 return NotFound();
 
-            var cityAttraction = Repository.GetAttraction(cityId, id);
+            var cityAttraction = await Repository.GetAttractionAsync(cityId, id);
 
             if (cityAttraction == null)
                 return NotFound();
@@ -161,7 +161,7 @@ namespace CityInfo.API.Controllers
 
             Mapper.Map(attractionPatch, cityAttraction);
 
-            if (!Repository.Save())
+            if (!await Repository.SaveAsync())
                 return StatusCode(500, "An error occured while processing your request.");
 
             return NoContent();
@@ -170,22 +170,22 @@ namespace CityInfo.API.Controllers
 
         // DELETE api/cities/attractions/5
         [HttpDelete("{cityId}/attractions/{id}")]
-        public IActionResult Delete(int cityId, int id)
+        public async Task<IActionResult> Delete(int cityId, int id)
         {
 
-            if (!Repository.CityExists(cityId))
+            if (!await Repository.CityExistsAsync(cityId))
                 return NotFound();
 
-            var attraction = Repository.GetAttraction(cityId, id);
+            var attraction = await Repository.GetAttractionAsync(cityId, id);
             if (attraction == null)
                 return NotFound();
 
-            Repository.DeleteAttraction(attraction);
+            await Repository.DeleteAttractionAsync(attraction);
 
-            if (!Repository.Save())
+            if (!await Repository.SaveAsync())
                 return StatusCode(500, "An error occured while processing your request.");
 
-            Email.Send("Attraction for city was deleted.",
+            await Email.SendEmailAsync("Attraction for city was deleted.",
                 $"Attraction {attraction.Name} with id {attraction.Id} was deleted.");
 
             return NoContent();

@@ -17,43 +17,46 @@ namespace CityInfo.API.Services.CityService
             Context = context;
         }
 
-        public IEnumerable<City> GetCities()
+        public async Task<IEnumerable<City>> GetCitiesAsync()
         {
-            return Context.Cities.OrderBy(c => c.Name).ToList();
+            return await Context.Cities.OrderBy(c => c.Name).ToListAsync();
         }
 
-        public City GetCity(int cityId, bool includeAttractions)
+        public async Task<City> GetCityAsync(int cityId, bool includeAttractions)
         {
             if (includeAttractions)
-                return Context.Cities.Include(c => c.Attractions).Where(c => c.Id == cityId).FirstOrDefault();
+                return await Context.Cities.Include(c => c.Attractions).Where(c => c.Id == cityId).FirstOrDefaultAsync();
 
-            return Context.Cities.Where(c => c.Id == cityId).FirstOrDefault();
+            return await Context.Cities.Where(c => c.Id == cityId).FirstOrDefaultAsync();
         }
 
-        public IEnumerable<Attraction> GetAttractions(int cityId)
+        public async Task<IEnumerable<Attraction>> GetAttractionsAsync(int cityId)
         {
-            return Context.Attractions.Where(a => a.CityId == cityId).ToList();
+            return await Context.Attractions.Where(a => a.CityId == cityId).ToListAsync();
         }
 
-        public Attraction GetAttraction(int cityId, int attractionId)
+        public async Task<Attraction> GetAttractionAsync(int cityId, int attractionId)
         {
-            return Context.Attractions.Where(a => a.CityId == cityId && a.Id == attractionId).FirstOrDefault();
+            return await Context.Attractions.Where(a => a.CityId == cityId && a.Id == attractionId).FirstOrDefaultAsync();
         }
 
-        public bool CityExists(int cityId) => 
-            Context.Cities.Any(c => c.Id == cityId);
-
-        public void CreateAttraction(int cityId, Attraction attraction)
+        public async Task CreateAttractionAsync(int cityId, Attraction attraction)
         {
-            var city = GetCity(cityId, false);
+            var city = await GetCityAsync(cityId, false);
             city.Attractions.Add(attraction);
         }
 
-        public void DeleteAttraction(Attraction attraction)
+        public async Task DeleteAttractionAsync(Attraction attraction)
         {
             Context.Attractions.Remove(attraction);
+            await Context.SaveChangesAsync();
         }
-        public bool Save() => (Context.SaveChanges() >= 0);
+        public async Task<bool> SaveAsync() => (await Context.SaveChangesAsync() >= 0);
+
+        public async Task<bool> CityExistsAsync(int cityId)
+        {
+            return await Context.Cities.AnyAsync(c => c.Id == cityId);
+        }
 
     }
 }
